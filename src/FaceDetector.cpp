@@ -1,8 +1,8 @@
 #include "FaceDetector.h"
 
 
-FaceDetector::FaceDetector(const std::string& caffe_config, const std::string& caffe_weights, float confidence) {
-	net = cv::dnn::readNetFromCaffe(caffe_config, caffe_weights);
+FaceDetector::FaceDetector(const std::string& config, const std::string& weights, float confidence) {
+	net = cv::dnn::readNetFromCaffe(config, weights);
 	this->confidence = confidence;
 }
 
@@ -17,11 +17,13 @@ DetectedObj FaceDetector::detect(const std::string& image_path) {
 DetectedObj FaceDetector::detect(const cv::Mat& image) {
 	DetectedObj result;
 
-	cv::Mat resized;
-	cv::resize(image, resized, { 300, 300 });
-	cv::Mat blob = cv::dnn::blobFromImage(resized, 1.0, { 300, 300 }, { 104.0, 177.0, 123.0 }, false, false);
+	cv::Mat frame = cvMat_copy(image);
+	float brightness = getBrightness(frame);
+	if (brightness < 0.7f) {
+		frame.convertTo(frame, -1, 1.32, brightness * 250.f);
+	}
 
-	net.setInput(blob);
+	net.setInput(cv::dnn::blobFromImage(frame, 1.0, { 300, 300 }, { 104.0, 177.0, 123.0 }));
 	cv::Mat detection = net.forward();
 
 	cv::Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
@@ -29,12 +31,14 @@ DetectedObj FaceDetector::detect(const cv::Mat& image) {
 	for (uint32_t i = 0; i < detectionMat.rows; ++i) {
 		float temp_confidence = detectionMat.at<float>(i, 2);
 		if (temp_confidence >= confidence) {
-			int x1 = static_cast<int>(detectionMat.at<float>(i, 3) * image.size().width);
-			int y1 = static_cast<int>(detectionMat.at<float>(i, 4) * image.size().height);
-			int x2 = static_cast<int>(detectionMat.at<float>(i, 5) * image.size().width);
-			int y2 = static_cast<int>(detectionMat.at<float>(i, 6) * image.size().height);
+			int x1 = detectionMat.at<float>(i, 3) * frame.size().width;
+			int y1 = detectionMat.at<float>(i, 4) * frame.size().height;
+			int x2 = detectionMat.at<float>(i, 5) * frame.size().width;
+			int y2 = detectionMat.at<float>(i, 6) * frame.size().height;
 
-			result.rects.push_back({ x1, y1, x2 - x1, y2 - y1 });
+			if (x1 > 0 && y1 > 0 && x2 < frame.size().width && y2 < frame.size().height) {
+				result.push_back({ x1, y1, x2 - x1, y2 - y1 });
+			}
 		}
 	}
 

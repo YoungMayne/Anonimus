@@ -5,22 +5,41 @@
 
 
 int main() {
-	std::string caffe_config = "../../Anonimus/data/deploy.prototxt";
-	std::string caffe_weights = "../../Anonimus/data/res10_300x300_ssd_iter_140000.caffemodel";
+	const std::string config = "../../Anonimus/data/deploy.prototxt";
+	const std::string weights = "../../Anonimus/data/res10_300x300_ssd_iter_140000.caffemodel";
+	const std::string video = "../../Anonimus/data/";
 
-	cv::Mat image = cv::imread("../../Anonimus/data/1.jpg");
+	FaceDetector detector(config, weights);
 
-	FaceDetector detector(caffe_config, caffe_weights);
-
-	DetectedObj obj = detector.detect(image);
-	for (const auto& rect : obj.rects) {
-		cv::rectangle(image, rect, { 0, 255, 0 }, 3);
-	}
-
-
+	cv::Mat frame;
+	cv::VideoCapture cap(video);
 	cv::namedWindow("window");
-	cv::imshow("window", image);
-	cv::waitKey(0);
+	
+	DetectedObj previous;
+	int previous_detected = 0;
+	for (cap >> frame; !frame.empty(); cap >> frame) {
+
+		DetectedObj current = detector.detect(frame);
+		for (const cv::Rect& rect : current) {
+			cv::rectangle(frame, rect, { 0, 255, 0 }, 3);
+		}
+		for (const cv::Rect& rect : previous) {
+			cv::rectangle(frame, rect, { 0, 255, 0 }, 3);
+		}
+
+		if (!current.empty()) {
+			previous_detected = 15;
+		}
+		else if (previous_detected) {
+			--previous_detected;
+		}
+		else {
+			previous.clear();
+		}
+
+		cv::imshow("window", frame);
+		cv::waitKey(1);
+	}
 
 	return 0;
 }
