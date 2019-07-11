@@ -14,12 +14,6 @@ struct DObj {
 	float confidence;
 };
 
-struct PObj {
-	cv::Rect rect;
-	uint32_t draw;
-};
-
-
 typedef	std::vector<DObj> DetectedObj;
 
 

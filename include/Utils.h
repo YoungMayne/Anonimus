@@ -9,13 +9,13 @@ inline float getBrightness(const cv::Mat& image) {
 
 	cv::split(image, color);
 
-	color[0] = color[0] * 0.299f;
-	color[1] = color[1] * 0.587f;
-	color[2] = color[2] * 0.114f;
-
+	color[0] *= 0.299f;
+	color[1] *= 0.587f;
+	color[2] *= 0.114f;
+ 
 	cv::Scalar summ = cv::sum(color[0] + color[1] + color[2]);
 
-	return summ[0] / (255 * image.rows * image.cols) * 2;
+	return summ[0] / (255.f * image.rows * image.cols) * 2.f;
 }
 
 
