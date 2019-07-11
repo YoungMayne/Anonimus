@@ -41,10 +41,22 @@ DetectedObj FaceDetector::detect(cv::Mat& image) {
 			int x2 = detectionMat.at<float>(i, 5) * frame.size().width;
 			int y2 = detectionMat.at<float>(i, 6) * frame.size().height;
 
-			if (x1 > 0 && y1 > 0 && x2 < frame.size().width && y2 < frame.size().height) {
-				obj.rect = { x1, y1, x2 - x1, y2 - y1 };
-				result.push_back(obj);
+			float coef = 1.06f;
+			if ((x1 /= coef) < 0) {
+				x1 = 0;
 			}
+			if ((x2 *= coef) > frame.size().width) {
+				x2 = frame.size().width - 1;
+			}
+			if ((y1 /= coef) < 0) {
+				y1 = 0;
+			}
+			if ((y2 *= coef) > frame.size().height) {
+				y2 = frame.size().height - 1;
+			}
+
+			obj.rect = { x1, y1, x2 - x1, y2 - y1 };
+			result.push_back(obj);
 		}
 	}
 
