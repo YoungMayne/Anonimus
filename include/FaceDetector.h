@@ -11,7 +11,7 @@
 
 struct DObj {
 	cv::Rect rect;
-	float confidence;
+	float    confidence;
 };
 
 typedef	std::vector<DObj> DetectedObj;
@@ -19,11 +19,11 @@ typedef	std::vector<DObj> DetectedObj;
 
 class FaceDetector {
 public:
-	FaceDetector(const std::string& config, const std::string& weights, float confidence = 0.5f);
+	FaceDetector       (const std::string& config, const std::string& weights, float confidence = 0.5f);
 
-	DetectedObj detect(const std::string& image_path);
-	DetectedObj detect(cv::Mat& image);
+	DetectedObj detect (const std::string& image_path);
+	DetectedObj detect (cv::Mat& image);
 private:
-	cv::dnn::Net net;
-	float confidence;
+	cv::dnn::Net       net;
+	float              confidence;
 };
