@@ -29,6 +29,6 @@ inline cv::Mat cvMat_copy(const cv::Mat& mat) {
 inline void alignBrightness(cv::Mat& image) {
 	float brightness = getBrightness(image);
 	if (brightness < 0.7f) {
-		image.convertTo(image, -1, 1.0, 1 / brightness * 20.f);
+		image.convertTo(image, -1, 1., 1 / brightness * 20.f);
 	}
 }

@@ -2,14 +2,14 @@
 
 
 
-Anonimus::Anonimus(const std::string& video_path, FaceDetector* detector, ImageChanger* changer) {
+Anonimus::Anonimus(const std::string& video_path, Detector* detector, ImageChanger* changer) {
 	this->detector = detector;
 	this->changer  = changer;
 	cap.open(video_path);
 }
 
 
-Anonimus::Anonimus(int camera, FaceDetector * detector, ImageChanger * changer) {
+Anonimus::Anonimus(int camera, Detector * detector, ImageChanger * changer) {
 	this->detector = detector;
 	this->changer  = changer;
 	cap.open(camera);
@@ -26,7 +26,7 @@ void Anonimus::setVideo(int camera) {
 }
 
 
-void Anonimus::setDetector(FaceDetector * detector) {
+void Anonimus::setDetector(Detector * detector) {
 	this->detector = detector;
 }
 
@@ -43,22 +43,25 @@ bool Anonimus::join(int delay) {
 
 	cv::Mat frame;
 	cv::Mat anonim;
-
 	cv::namedWindow("Anonimus");
-	for (cap >> anonim, cap >> frame; !frame.empty(); cap >> frame) {
-		cv::flip(frame, frame, 0);
-		alignBrightness(frame);
-		DetectedObj obj = detector->detect(frame);
 
+	for (cap >> frame; !frame.empty(); cap >> frame) {
+		anonim = cvMat_copy(frame);
+		alignBrightness(frame);
+
+		DetectedObj obj = detector->detect(frame);
 		if (!obj.empty()) {
-			anonim = cvMat_copy(frame);
 			for (const DObj& item : obj) {
 				changer->process(anonim, item.rect);
 			}
 		}
+		else {
+			cv::blur(anonim, anonim, { 64, 64 });
+		}
 
 		cv::imshow("Anonimus", anonim);
 		if (cv::waitKey(delay) == 27) {
+			cv::destroyWindow("Anonimus");
 			return true;
 		}
 	}
