@@ -15,12 +15,12 @@ Detector::Detector(const std::string& config, const std::string& weights, float 
 
 
 void Detector::setProperties(const cv::Scalar& mean, const cv::Size& size, double scale, bool swap_rb, bool crop, int depth) {
-	this->mean = mean;
-	this->size = size;
-	this->scale = scale;
+	this->mean    = mean;
+	this->size    = size;
+	this->scale   = scale;
 	this->swap_rb = swap_rb;
-	this->crop = crop;
-	this->depth = depth;
+	this->crop    = crop;
+	this->depth   = depth;
 }
 
 
@@ -32,7 +32,9 @@ DetectedObj Detector::detect(const std::string& image_path) {
 DetectedObj Detector::detect(cv::Mat& image) {
 	DetectedObj result;
 
-	net.setInput(cv::dnn::blobFromImage(image, scale, size, mean, swap_rb, crop, depth));
+	auto blob = cv::dnn::blobFromImage(image, scale, size, mean, swap_rb, crop, depth);
+
+	net.setInput(blob);
 
 	cv::Mat detection = net.forward();
 	cv::Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());

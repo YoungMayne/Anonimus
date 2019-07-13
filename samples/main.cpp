@@ -6,8 +6,8 @@
 
 
 int main() {
-	const std::string config  = "../../Anonimus/data/pose_deploy.prototxt";
-	const std::string weights = "../../Anonimus/data/haarcascade_frontalface_alt.xml";
+	const std::string config  = "../../Anonimus/data/deploy.prototxt";
+	const std::string weights = "../../Anonimus/data/res10_300x300_ssd_iter_140000.caffemodel";
 	const std::string video   = "../../Anonimus/data/prank.mp4";
 
 	Detector detector(config, weights, 0.4f);
