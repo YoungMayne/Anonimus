@@ -1,8 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <opencv2/opencv.hpp>
-#include<QMessageBox>
-#include "anonimus.h"
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -15,7 +13,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
 void MainWindow::on_pushButton_clicked()
 {
    auto QfileName = QFileDialog::getOpenFileName(this,tr("Open Video"), "", tr("Video Files (*.avi,*mp4)"));
@@ -29,58 +26,34 @@ void MainWindow::on_pushButton_clicked()
 }
 
 void MainWindow::on_pushButton_2_clicked()
-{  std::string test = "../../Anonimus/data/";
-    std::string jpg = ".jpg";
+{   std::string detector_name;
+    std::string image_changer_name;
 
 
-    const std::string config  = "../../Anonimus/data/deploy.prototxt";
-    const std::string weights = "../../Anonimus/data/res10_300x300_ssd_iter_140000.caffemodel";
-    const std::string video   = "../../Anonimus/data/prank.mp4";
-    const std::string pic = "../../Anonimus/data/mface1.jpg";
-    const std::string model_bin = "../../Anonimus/data/face-reidentification-retail-0095.bin";
-    const std::string weights_xml = "../../Anonimus/data/face-reidentification-retail-0095.xml";
-    Detector detector(config, weights, 0.4f);
-    Classificator classificator(model_bin, weights_xml,0.6f);
-    Anonimus anonimus(0, &detector, &classificator, new Blur());
-    cv::Mat img1, img2, img3, img4, img5;
-    img1 = cv::imread(pic);
-    img2 = cv::imread(test+"mface"+jpg);
-    img3 = cv::imread(test + "3" + jpg);
-    img4 = cv::imread(test + "4" + jpg);
-    img5 = cv::imread(test + "5" + jpg);
-    classificator.addNewObject(img1);
-   ImageChanger* changer;
+    if(ui->checkBox_2->isChecked())
+        detector_name="detector";
+    else
+        detector_name="classificator";
 
 
-  if(ui->checkBox->isChecked())
-  {
-     Anonimus();
-  }
-  else
-  {
-     Anonimus();
-  }
-
-    while(true)
-    {
-//обрабатываем кадры в соответсвии с выбранным radio_button
-        if(ui->radioButton->isChecked())//blur all faces
+        if(ui->radioButton->isChecked())
+        {
+            image_changer_name="Blur"   ;
+        }
+        if(ui->radioButton_2->isChecked())
+        {
+            image_changer_name="Pixelize";
+        }
+        if(ui->radioButton_3->isChecked())
         {
 
+            image_changer_name="Kek";
         }
-        if(ui->radioButton_2->isChecked())//
+       if(ui->radioButton_4->isChecked())
         {
-
+            image_changer_name="rectangle";
         }
-        if(ui->radioButton_3->isChecked())//
-        {
-
-        }
-       if(ui->radioButton_4->isChecked())//
-        {
-
-        }
-    }
+    execl("main.exe",VideoPath,detector_name,image_changer_name,PicturePath,NULL);
 
 }
 
