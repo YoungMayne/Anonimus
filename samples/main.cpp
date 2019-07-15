@@ -20,12 +20,13 @@ ImageChanger* getChangerFromName(const char* name, const char* image_path) {
 		return new Kek();
 	}
 	if (std::strcmp(name, "rectangle") == 0) {
-		return new Rectangle({0, 255, 0}, 3);
+		return new Rectangle({ 0, 255, 0 }, 3);
 	}
 }
 
 
-void loadFrames(cv::VideoCapture& cap, /* Classificator* classificator, */ double photo_delay = 0.5, int wait_delay = 1) {
+void loadFrames(/* Classificator* classificator, */ double photo_delay = 0.5, int wait_delay = 1) {
+	cv::VideoCapture cap(0);
 	cv::namedWindow("Anonimus");
 	clock_t start_time = clock();
 	for (cv::Mat frame; cap >> frame, !frame.empty(); cap >> frame) {
@@ -44,68 +45,57 @@ void loadFrames(cv::VideoCapture& cap, /* Classificator* classificator, */ doubl
 
 
 int main(int argc, char** argv) {
-	const std::string detector_config  = "../../Anonimus/data/deploy.prototxt";
+	const std::string detector_config = "../../Anonimus/data/deploy.prototxt";
 	const std::string detector_weights = "../../Anonimus/data/res10_300x300_ssd_iter_140000.caffemodel";
 
 	BaseDetector* detector;
 	ImageChanger* changer;
+	cv::VideoCapture cap;
 
-	if (std::strcmp(argv[0], "classificator") == 0) {
+	if (std::strcmp(argv[1], "classificator") == 0) {
 		const std::string classificator_config = "";
 		const std::string classificator_weights = "";
 		//detector = new Classificator
-		changer = getChangerFromName(argv[1], argv[2]);
+		changer = getChangerFromName(argv[2], argv[3]);
+		loadFrames(/*&detector*/);
 	}
-	else if (std::strcmp(argv[0], "detector") == 0) {
+	else if (std::strcmp(argv[1], "detector") == 0) {
 		detector = new Detector(detector_config, detector_weights);
-		changer = getChangerFromName(argv[1], "");
+		changer = getChangerFromName(argv[2], "");
 	}
 	else {
 		return -1;
 	}
 
-	while (true) {
-		cv::VideoCapture cap;
+	cv::namedWindow("Anonimus");
+	if (std::strcmp(argv[0], "0") == 0) {
+		cap.open(0);
+	}
+	else {
+		cap.open(argv[0]);
+	}
 
-		while (true/*ÂÛÁÎÐ ÍÀÑÒÐÎÅÊ*/) {
-			//set changer
-				/*delete changer;
-				changer = new ...*/
-			//
-			//set video
-					//cap.open(path or camera)
-			//
-			//set detector
-					//delete detector;
-					//detector = new ...
-			//
-			if (!cap.isOpened()) {
-				//Error video/camera path
+	for (cv::Mat frame; cap >> frame, !frame.empty(); cap >> frame) {
+		cv::Mat anonim = frame.clone();
+		alignBrightness(frame);
+
+		DetectedObj obj = detector->process(frame);
+		if (!obj.empty()) {
+			for (const DObj& item : obj) {
+				changer->process(anonim, item.rect);
 			}
 		}
-		//work
-		cv::namedWindow("Anonimus");
-		for (cv::Mat frame; cap >> frame, !frame.empty(); cap >> frame) {
-			cv::Mat anonim = frame.clone();
-			alignBrightness(frame);
+		else {
+			cv::blur(anonim, anonim, { 64, 64 });
+		}
 
-			DetectedObj obj = detector->process(frame);
-			if (!obj.empty()) {
-				for (const DObj& item : obj) {
-					changer->process(anonim, item.rect);
-				}
-			}
-			else {
-				cv::blur(anonim, anonim, { 64, 64 });
-			}
-
-			cv::imshow("Anonimus", anonim);
-			if (cv::waitKey(1) == 27) {//escape
-				cv::destroyWindow("Anonimus");
-				break;
-			}
+		cv::imshow("Anonimus", anonim);
+		if (cv::waitKey(1) == 27) {//escape
+			cv::destroyWindow("Anonimus");
+			break;
 		}
 	}
 
+	//run menu
 	return 0;
 }
