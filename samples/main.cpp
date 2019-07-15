@@ -27,12 +27,13 @@ ImageChanger* getChangerFromName(const char* name, const char* image_path) {
 
 
 void loadFrames(Classificator* classificator, double photo_delay = 1.0, int wait_delay = 1) {
+	std::vector<cv::Mat> frames;
 	cv::VideoCapture cap(0);
 	cv::namedWindow("Press 'space' for return");
 	clock_t start_time = clock();
 	for (cv::Mat frame; cap >> frame, !frame.empty(); cap >> frame) {
 		if ((double)(clock() - start_time) / CLOCKS_PER_SEC >= photo_delay) {
-			classificator->addObject(frame);
+			frames.push_back(frame);
 			cv::rectangle(frame, { 0, 0, frame.size().width, frame.size().height }, { 0, 255, 0 }, 50);
 			start_time = clock();
 		}
@@ -42,6 +43,9 @@ void loadFrames(Classificator* classificator, double photo_delay = 1.0, int wait
 		}
 	}
 	cv::destroyWindow("Press 'space' for return");
+	for (const cv::Mat& frame : frames) {
+		classificator->addObject(frame);
+	}
 }
 
 
