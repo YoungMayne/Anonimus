@@ -24,17 +24,16 @@ void Detector::setProperties(const cv::Scalar& mean, const cv::Size& size, doubl
 }
 
 
-DetectedObj Detector::detect(const std::string& image_path) {
-	return detect(cv::imread(image_path));
+void Detector::setProperties(const std::string& config, const std::string& weights, float confidence) {
+	net = cv::dnn::readNet(config, weights);
+	this->confidence = confidence;
 }
 
 
-DetectedObj Detector::detect(cv::Mat& image) {
+DetectedObj Detector::process(const cv::Mat& image) {
 	DetectedObj result;
 
-	auto blob = cv::dnn::blobFromImage(image, scale, size, mean, swap_rb, crop, depth);
-
-	net.setInput(blob);
+	net.setInput(cv::dnn::blobFromImage(image, scale, size, mean, swap_rb, crop, depth));
 
 	cv::Mat detection = net.forward();
 	cv::Mat detectionMat(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
