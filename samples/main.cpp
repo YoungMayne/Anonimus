@@ -6,6 +6,25 @@
 #include "ImageChanger.h"
 
 
+ImageChanger* getChangerFromName(const char* name, const char* image_path) {
+	if (std::strcmp(name, "blur") == 0) {
+		return new Blur();
+	}
+	if (std::strcmp(name, "pixelize") == 0) {
+		return new Pixelize();
+	}
+	if (std::strcmp(name, "image") == 0) {
+		return new PutImage(cv::imread(image_path));
+	}
+	if (std::strcmp(name, "kek") == 0) {
+		return new Kek();
+	}
+	if (std::strcmp(name, "rectangle") == 0) {
+		return new Rectangle({0, 255, 0}, 3);
+	}
+}
+
+
 void loadFrames(cv::VideoCapture& cap, /* Classificator* classificator, */ double photo_delay = 0.5, int wait_delay = 1) {
 	cv::namedWindow("Anonimus");
 	clock_t start_time = clock();
@@ -24,13 +43,26 @@ void loadFrames(cv::VideoCapture& cap, /* Classificator* classificator, */ doubl
 }
 
 
-int main() {
-	const std::string config = "../../Anonimus/data/deploy.prototxt";
-	const std::string weights = "../../Anonimus/data/res10_300x300_ssd_iter_140000.caffemodel";
-	const std::string video = "../../Anonimus/data/prank.mp4";
+int main(int argc, char** argv) {
+	const std::string detector_config  = "../../Anonimus/data/deploy.prototxt";
+	const std::string detector_weights = "../../Anonimus/data/res10_300x300_ssd_iter_140000.caffemodel";
 
-	BaseDetector* detector = new Detector(config, weights, 0.4f);
-	ImageChanger* changer = new Blur();
+	BaseDetector* detector;
+	ImageChanger* changer;
+
+	if (std::strcmp(argv[0], "classificator") == 0) {
+		const std::string classificator_config = "";
+		const std::string classificator_weights = "";
+		//detector = new Classificator
+		changer = getChangerFromName(argv[1], argv[2]);
+	}
+	else if (std::strcmp(argv[0], "detector") == 0) {
+		detector = new Detector(detector_config, detector_weights);
+		changer = getChangerFromName(argv[1], "");
+	}
+	else {
+		return -1;
+	}
 
 	while (true) {
 		cv::VideoCapture cap;
