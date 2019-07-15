@@ -32,3 +32,30 @@ inline void alignBrightness(cv::Mat& image) {
 		image.convertTo(image, -1, 1., 1 / brightness * 20.f);
 	}
 }
+
+
+inline float scalar(const cv::Mat& mat1, const cv::Mat& mat2) {
+	float result = 0.0f;
+	for (int i = 0; i < mat1.cols; ++i) {
+		result += mat1.at<float>(0, i) * mat2.at<float>(0, 1);
+	}
+	return result;
+}
+
+
+inline double mag(const cv::Mat& mat) {
+	double result = 0.0;
+	for (int i = 0; i < mat.cols; i++) {
+		float item = mat.at<float>(0, i);
+		result += item * item;
+	}
+	return sqrt(result);
+}
+
+
+inline void normalize(cv::Mat& mat) {
+	double length = 1.0 / mag(mat);
+	for (int i = 0; i < mat.cols; ++i) {
+		mat.at<float>(0, i) *= length;
+	}
+}

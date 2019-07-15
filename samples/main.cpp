@@ -4,6 +4,7 @@
 
 #include "Detector.h"
 #include "ImageChanger.h"
+#include "Classificator.h"
 
 
 ImageChanger* getChangerFromName(const char* name, const char* image_path) {
@@ -25,56 +26,60 @@ ImageChanger* getChangerFromName(const char* name, const char* image_path) {
 }
 
 
-void loadFrames(/* Classificator* classificator, */ double photo_delay = 0.5, int wait_delay = 1) {
+void loadFrames(Classificator* classificator, double photo_delay = 0.5, int wait_delay = 1) {
 	cv::VideoCapture cap(0);
-	cv::namedWindow("Anonimus");
+	cv::namedWindow("Press 'space' for return");
 	clock_t start_time = clock();
 	for (cv::Mat frame; cap >> frame, !frame.empty(); cap >> frame) {
 		if ((double)(clock() - start_time) / CLOCKS_PER_SEC >= photo_delay) {
-			/*classificator.addObject(frame);*/
+			classificator->addObject(frame);
 			cv::rectangle(frame, { 0, 0, frame.size().width, frame.size().height }, { 0, 255, 0 }, 10);
 			start_time = clock();
 		}
-		cv::imshow("Anonimus", frame);
+		cv::imshow("Press 'space' for return", frame);
 		if (cv::waitKey(wait_delay) == 32) { //space = return			
 			break;
 		}
 	}
-	cv::destroyWindow("Anonimus");
+	cv::destroyWindow("Press 'space' for return");
 }
 
 
 int main(int argc, char** argv) {
-	const std::string detector_config = "../../Anonimus/data/deploy.prototxt";
-	const std::string detector_weights = "../../Anonimus/data/res10_300x300_ssd_iter_140000.caffemodel";
+	const std::string config  = "../../Anonimus/data/deploy.prototxt";
+	const std::string weights = "../../Anonimus/data/res10_300x300_ssd_iter_140000.caffemodel";
+	const std::string bin     = "../../Anonimus/data/";
+	const std::string xml     = "../../Anonimus/data/";
 
-	BaseDetector* detector;
-	ImageChanger* changer;
+	BaseDetector*    detector;
+	ImageChanger*    changer;
 	cv::VideoCapture cap;
 
 	if (std::strcmp(argv[1], "classificator") == 0) {
-		const std::string classificator_config = "";
-		const std::string classificator_weights = "";
-		//detector = new Classificator
+		detector = new Classificator(bin, xml, config, weights);
 		changer = getChangerFromName(argv[2], argv[3]);
-		loadFrames(/*&detector*/);
+		loadFrames((Classificator*)detector);
 	}
 	else if (std::strcmp(argv[1], "detector") == 0) {
-		detector = new Detector(detector_config, detector_weights);
+		detector = new Detector(config, weights);
 		changer = getChangerFromName(argv[2], "");
 	}
 	else {
 		return -1;
 	}
 
-	cv::namedWindow("Anonimus");
+
 	if (std::strcmp(argv[0], "0") == 0) {
 		cap.open(0);
 	}
 	else {
 		cap.open(argv[0]);
 	}
+	if (!cap.isOpened()) {
+		return -1;
+	}
 
+	cv::namedWindow("Anonimus");
 	for (cv::Mat frame; cap >> frame, !frame.empty(); cap >> frame) {
 		cv::Mat anonim = frame.clone();
 		alignBrightness(frame);
@@ -96,6 +101,8 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	delete detector;
+	delete changer;
 	//run menu
 	return 0;
 }
