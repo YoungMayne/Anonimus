@@ -47,7 +47,7 @@ private:
 class PutImage : public ImageChanger {
 public:
 	PutImage(const cv::Mat& image) {
-		this->image = cvMat_copy(image);
+		this->image = image.clone();
 	}
 	PutImage(const std::string& img_path, int flag = 1) {
 		this->image = cv::imread(img_path, flag);
@@ -71,7 +71,7 @@ public:
 		cv::Rect left_rect  = { rect.x, rect.y, rect.width / 2, rect.height };
 		cv::Rect right_rect = { rect.x + left_rect.width, rect.y, left_rect.width, rect.height };
 
-		cv::Mat left = cvMat_copy(image(left_rect));
+		cv::Mat left = image(left_rect);
 		cv::flip(left, left, 1);
 		cv::resize(left, left, { right_rect.width, right_rect.height });
 		left.copyTo(image(right_rect));

@@ -19,13 +19,6 @@ inline float getBrightness(const cv::Mat& image) {
 }
 
 
-inline cv::Mat cvMat_copy(const cv::Mat& mat) {
-	cv::Mat result;
-	mat.copyTo(result);
-	return result;
-}
-
-
 inline void alignBrightness(cv::Mat& image) {
 	float brightness = getBrightness(image);
 	if (brightness < 0.7f) {
@@ -37,7 +30,7 @@ inline void alignBrightness(cv::Mat& image) {
 inline float scalar(const cv::Mat& mat1, const cv::Mat& mat2) {
 	float result = 0.0f;
 	for (int i = 0; i < mat1.cols; ++i) {
-		result += mat1.at<float>(0, i) * mat2.at<float>(0, 1);
+		result += mat1.at<float>(0, i) * mat2.at<float>(0, i);
 	}
 	return result;
 }

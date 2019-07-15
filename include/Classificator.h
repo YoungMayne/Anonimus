@@ -11,17 +11,18 @@
 
 class Classificator : public BaseDetector {
 public:
-	Classificator(const std::string& bin, const std::string& xml, const std::string& config, const std::string& weights, float confidence = 0.5f);
-	~Classificator();
+	Classificator        (const std::string& bin, const std::string& xml, const std::string& config,
+						 const std::string& weights, float confidence = 0.5f);
+	~Classificator       ();
 
-	void addObject(const cv::Mat& image);
+	void addObject       (const cv::Mat& image);
 
-	DetectedObj process(const cv::Mat& image);
+	DetectedObj process  (const cv::Mat& image);
 private:
-	bool findSimilar(const cv::Mat& image);
+	bool findSimilar     (const cv::Mat& image);
 private:
-	cv::dnn::Net net;
-	Detector* detector;
-	float confidence;
+	cv::dnn::Net         net;
+	Detector*            detector;
+	float                confidence;
 	std::vector<cv::Mat> baseObjects;
 };

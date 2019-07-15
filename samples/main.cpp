@@ -27,18 +27,19 @@ ImageChanger* getChangerFromName(const char* name, const char* image_path) {
 
 
 void loadFrames(Classificator* classificator, double photo_delay = 1.0, int wait_delay = 1) {
-	std::vector<cv::Mat> frames;
 	cv::VideoCapture cap(0);
+	std::vector<cv::Mat> frames;
 	cv::namedWindow("Press 'space' for return");
+
 	clock_t start_time = clock();
 	for (cv::Mat frame; cap >> frame, !frame.empty(); cap >> frame) {
 		if ((double)(clock() - start_time) / CLOCKS_PER_SEC >= photo_delay) {
-			frames.push_back(frame);
+			frames.push_back(frame.clone());
 			cv::rectangle(frame, { 0, 0, frame.size().width, frame.size().height }, { 0, 255, 0 }, 50);
 			start_time = clock();
 		}
 		cv::imshow("Press 'space' for return", frame);
-		if (cv::waitKey(wait_delay) == 32) { //space = return			
+		if (cv::waitKey(wait_delay) == 32) {			
 			break;
 		}
 	}
@@ -66,7 +67,7 @@ int main(int argc, char** argv) {
 	}
 	else if (std::strcmp(argv[2], "detector") == 0) {
 		detector = new Detector(config, weights);
-		changer = getChangerFromName(argv[3], "");
+		changer = getChangerFromName(argv[3], argv[4]);
 	}
 	else {
 		return -1;
@@ -95,11 +96,11 @@ int main(int argc, char** argv) {
 			}
 		}
 		else {
-			cv::blur(anonim, anonim, { 64, 64 });
+			cv::blur(anonim, anonim, { 1, 1 });
 		}
 
 		cv::imshow("Anonimus", anonim);
-		if (cv::waitKey(1) == 27) {//escape
+		if (cv::waitKey(1) == 27) {
 			cv::destroyWindow("Anonimus");
 			break;
 		}
@@ -107,6 +108,5 @@ int main(int argc, char** argv) {
 
 	delete detector;
 	delete changer;
-	//run menu
 	return 0;
 }
