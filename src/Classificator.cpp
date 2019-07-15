@@ -1,13 +1,13 @@
 #include "..\include\Classificator.h"
 
 
-Classificator::Classificator(const std::string& bin, const std::string& xml, const std::string& config, const std::string& weights, float confidence = 0.5f) {
-	net = cv::dnn::readNet(bin, xml);
+Classificator::Classificator(const std::string& bin, const std::string& xml, const std::string& config, const std::string& weights, float confidence) {
+	this->detector = new Detector(config, weights, confidence);
+	this->net = cv::dnn::readNet(bin, xml);
+	this->confidence = confidence;
+
 	net.setPreferableBackend(0);
 	net.setPreferableTarget(0);
-
-	this->detector = new Detector(config, weights, confidence);
-	this->confidence = confidence;
 }
 
 
@@ -17,10 +17,12 @@ Classificator::~Classificator() {
 
 
 void Classificator::addObject(const cv::Mat& image) {
-	net.setInput(cv::dnn::blobFromImage(image, 1.0, cv::Size(128, 128), { 0, 0, 0 }));
-	cv::Mat obj = net.forward().reshape(1, 1);
-	normalize(obj);
-	baseObjects.push_back(obj);
+	for (const DObj& item : detector->process(image)) {
+		net.setInput(cv::dnn::blobFromImage(image(item.rect), 1.0, cv::Size(128, 128), { 0, 0, 0 }));
+		cv::Mat obj = net.forward().reshape(1, 1);
+		normalize(obj);
+		baseObjects.push_back(obj);
+	}
 }
 
 

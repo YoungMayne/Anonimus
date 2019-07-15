@@ -6,9 +6,6 @@
 #include "Utils.h"
 
 
-
-
-
 class Detector : public BaseDetector {
 public:
 	Detector            (const std::string& config, const std::string& weights, float confidence = 0.5f);
