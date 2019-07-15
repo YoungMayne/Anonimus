@@ -1,10 +1,65 @@
 #include <opencv2\opencv.hpp>
 #include <opencv2\dnn.hpp>
 #include <list>
-
+#include<cmath>
 #include "Detector.h"
 #include "ImageChanger.h"
 #include "Classificator.h"
+
+
+//координаты прямоугольника задаваемые мышкой
+cv::Point p1, p2;
+//флаги состояния кнопки мыши
+bool lup, ldown;
+//изображение на котором задается roi
+cv::Mat img;
+static void mouse_do_nothing(int event, int x, int y, int, void*)
+{
+	return;
+}
+static void selectROI(int event, int x, int y, int, void*)
+{
+	if (event == cv::EVENT_RBUTTONDOWN)
+	{
+		return;
+	}
+	if (event == cv::EVENT_LBUTTONDOWN)
+	{
+		ldown = true;
+		p1.x = x;
+		p1.y = y;
+	}
+	if (event == cv::EVENT_LBUTTONUP)
+	{
+		if (abs(x - p1.x) > 10 && abs(y - p1.y) > 10)
+		{
+			lup = true;
+			p2.x = x;
+			p2.y = y;
+		}
+		else lup = true;
+	}
+
+	if (ldown == true && lup == false)
+	{
+		cv::Point p(x, y);
+		cv::Mat locImg = img.clone();
+		cv::rectangle(locImg, p1, p, Scalar(0, 255, 0));
+		cv::namedWindow("Image");
+		cv::imshow("Image", locImg);
+	}
+	if (ldown == true && lup == true)
+	{
+		cv::Rect rect;
+		rect.width = abs(p1.x - p2.x);
+		rect.height = abs(p1.y - p2.y);
+		rect.x = min(p1.x, p2.x);
+		rect.y = min(p1.y, p2.y);
+		img = cv::Mat(img, rect);
+		ldown = false;
+		lup = false;
+	}
+}
 
 
 ImageChanger* getChangerFromName(const char* name, const char* image_path) {
